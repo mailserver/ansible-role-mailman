@@ -1,0 +1,55 @@
+- name: dependencies are installed
+  apt:
+    name: '{{ item }}'
+    update_cache: yes
+    cache_valid_time: 3600
+    state: latest
+  with_items:
+    - fcgiwrap
+    - spawn-fcgi
+    - nginx
+
+- name: mailman-fcgiwrap systemd service is installed
+  template:
+    src: systemd/services/mailman-fcgiwrap.service.j2
+    dest: /etc/systemd/system/mailman-fcgiwrap.service
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - reload daemon
+    - restart fcgiwrap
+
+- name: mailman-fcgiwrap systemd services is enabled
+  systemd:
+    name: mailman-fcgiwrap
+    enabled: yes
+
+- name: nginx vhost is configured
+  template:
+    src: nginx/site.conf.j2
+    dest: '/etc/nginx/sites-available/{{ item.domain }}.conf'
+    owner: root
+    group: root
+    mode: '0644'
+  with_items: '{{ mailman_vhosts }}'
+  notify: restart nginx
+
+- name: nginx vhost is enabled
+  file:
+    src: '/etc/nginx/sites-available/{{ item.domain }}.conf'
+    dest: '/etc/nginx/sites-enabled/{{ item.domain }}.conf'
+    owner: root
+    group: root
+    state: link
+  with_items: '{{ mailman_vhosts }}'
+  notify: restart nginx
+
+- name: nginx systemd service is enabled and unmasked
+  systemd:
+    name: nginx
+    masked: no
+    enabled: yes
+  notify:
+    - reload daemon
+    - restart nginx

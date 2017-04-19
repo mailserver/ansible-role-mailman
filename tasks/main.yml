@@ -1,0 +1,9 @@
+---
+
+- set_fact:
+    _postfix_style_virtual_domains: "{{ mailman_vhosts | map(attribute='domain') | list }}"
+
+- include: _accounts.yml
+- include: _install.yml
+- include: _configure.yml
+- include: _permissions.yml

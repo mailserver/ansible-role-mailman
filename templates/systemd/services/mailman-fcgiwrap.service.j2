@@ -1,0 +1,12 @@
+[Unit]
+Description=Mailman FastCGI wrapper
+After=nss-user-lookup.target
+
+[Service]
+ExecStart=/usr/bin/spawn-fcgi -u "{{mailman_www_user}}" -g "{{mailman_www_group}}" -s /run/{{mailman_fastcgi_socket}} -M 660 -n -- /usr/sbin/fcgiwrap
+User={{mailman_www_user}}
+Group={{mailman_www_group}}
+RuntimeDirectory={{mailman_fastcgi_run_dir}}
+
+[Install]
+Also=fcgiwrap.socket

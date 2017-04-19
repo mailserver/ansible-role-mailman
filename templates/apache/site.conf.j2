@@ -1,0 +1,27 @@
+<VirtualHost *:80>
+  ServerName {{ item }}
+  ErrorLog /var/log/apache2/mailman_{{ item }}_error.log
+  CustomLog /var/log/apache2/mailman_{{ item }}_access.log combined
+
+  SuexecUserGroup {{ mailman_www_user }} {{ mailman_www_group }}
+  <Directory {{ mailman_home_dir }}/archives/>
+      Options FollowSymLinks +ExecCGI
+      AllowOverride None
+  </Directory>
+
+  Alias /pipermail/ {{ mailman_home_dir }}/archives/public/
+  Alias /images/mailman/ /usr/share/images/mailman/
+  ScriptAlias /admin {{ mailman_lib_dir }}/cgi-bin/admin
+  ScriptAlias /admindb {{ mailman_lib_dir }}/cgi-bin/admindb
+  ScriptAlias /confirm {{ mailman_lib_dir }}/cgi-bin/confirm
+  ScriptAlias /create {{ mailman_lib_dir }}/cgi-bin/create
+  ScriptAlias /edithtml {{ mailman_lib_dir }}/cgi-bin/edithtml
+  ScriptAlias /listinfo {{ mailman_lib_dir }}/cgi-bin/listinfo
+  ScriptAlias /options {{ mailman_lib_dir }}/cgi-bin/options
+  ScriptAlias /private {{ mailman_lib_dir }}/cgi-bin/private
+  ScriptAlias /rmlist {{ mailman_lib_dir }}/cgi-bin/rmlist
+  ScriptAlias /roster {{ mailman_lib_dir }}/cgi-bin/roster
+  ScriptAlias /subscribe {{ mailman_lib_dir }}/cgi-bin/subscribe
+  ScriptAlias /mailman/ {{ mailman_lib_dir }}/cgi-bin/
+  ScriptAlias / {{ mailman_lib_dir }}/cgi-bin/listinfo
+</VirtualHost>

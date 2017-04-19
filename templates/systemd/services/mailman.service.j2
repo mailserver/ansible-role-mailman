@@ -1,0 +1,13 @@
+[Unit]
+Description=GNU Mailing List Manager
+After=network.target
+
+[Service]
+ExecStart={{ mailman_lib_dir }}/bin/mailmanctl -s start
+ExecReload={{ mailman_lib_dir }}/bin/mailmanctl restart
+ExecStop={{ mailman_lib_dir }}/bin/mailmanctl stop
+StandardError=syslog
+Type=forking
+
+[Install]
+WantedBy=multi-user.target

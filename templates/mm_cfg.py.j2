@@ -1,0 +1,28 @@
+from Defaults import *
+
+MTA = 'Postfix'
+MAILMAN_SITE_LIST = 'mailman'
+
+DEFAULT_EMAIL_HOST = '{{ mailman_host }}'
+DEFAULT_URL_HOST = '{{ mailman_host }}'
+
+add_virtualhost(DEFAULT_URL_HOST, DEFAULT_EMAIL_HOST)
+
+VIRTUAL_MAILMAN_LOCAL_DOMAIN = '{{ mailman_host }}'
+POSTFIX_STYLE_VIRTUAL_DOMAINS = ["{{ _postfix_style_virtual_domains | join('\",\"') }}"]
+{% for vhost in mailman_vhosts %}
+add_virtualhost("{{ vhost.domain }}", "{{ vhost.domain }}")
+{% endfor %}
+
+DEFAULT_URL_PATTERN = 'https://%s/'
+
+DEFAULT_SERVER_LANGUAGE = '{{ mailman_language }}'
+
+# Iirc this was used in pre 2.1, leave it for now
+USE_ENVELOPE_SENDER = 0 # Still used?
+
+# Unset send_reminders on newly created lists
+DEFAULT_SEND_REMINDERS = 0
+
+# Postmap wrapper to generate transports rather than aliases
+POSTFIX_MAP_CMD = '{{ mailman_lib_dir }}/scripts/generate-transport-mailman.sh'

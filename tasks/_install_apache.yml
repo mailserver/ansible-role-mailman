@@ -1,0 +1,63 @@
+---
+
+- name: apache2 and modules are installed
+  apt:
+    name: '{{ item }}'
+    state: latest
+    update_cache: yes
+    cache_valid_time: 3600
+  with_items:
+    - apache2
+    - apache2-suexec-custom
+
+# Apache Modules
+- name: apache2 suexec module is enabled
+  command: a2enmod suexec
+  args:
+    creates: /etc/apache2/mods-enabled/suexec.load
+  notify: restart apache
+
+- name: apache2 suexec module is enabled
+  command: a2enmod suexec
+  args:
+    creates: /etc/apache2/mods-enabled/suexec.load
+  notify: restart apache
+
+- name: apache2 cgid module is enabled
+  command: a2enmod cgid
+  args:
+    creates: /etc/apache2/mods-enabled/cgid.load
+  notify: restart apache
+
+# Suexec permissions
+- name: suexec permissions for mailman_www_user and mailman_www_group are set
+  template:
+    src: apache/suexec.j2
+    dest: /etc/apache2/suexec/{{ mailman_www_user }}
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart apache
+
+# Virtual Hosts
+- name: apache2 default page is disabled
+  command: '{{ item }}'
+  args:
+    removes: /etc/apache2/sites-enabled/000-default.conf
+  with_items:
+    - a2dissite 000-default
+  notify: restart apache
+
+- name: apache2 is configured
+  template:
+    src: apache/site.conf.j2
+    dest: '/etc/apache2/sites-available/{{ mailman_host }}.conf'
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: apache2 site is enabled
+  command: 'a2ensite {{ mailman_host }}'
+  args:
+    creates: '/etc/apache2/sites-enabled/{{ mailman_host }}.conf'
+  notify: restart apache

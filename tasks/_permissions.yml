@@ -1,0 +1,51 @@
+---
+
+
+
+- name: permissions of home directory are correct
+  file:
+    path: '{{ mailman_home_dir }}'
+    mode: 0775
+    owner: '{{ mailman_user }}'
+    group: '{{ mailman_group }}'
+
+- name: owner and group of data/lists directories are set
+  file:
+    path: '{{ mailman_home_dir }}/{{item}}'
+    owner: '{{ mailman_user }}'
+    group: '{{ mailman_www_group }}'
+    recurse: yes
+  with_items:
+    - data
+    - lists
+
+- name: permissions of data/lists directories are correct
+  file:
+    path: '{{ mailman_home_dir }}/{{item}}'
+    mode: 0775
+  with_items:
+    - data
+    - lists
+
+- name: permission of aliases file are correct
+  file:
+    path: '{{ item }}'
+    state: file
+    mode: 0775
+  with_items:
+    - '{{ mailman_home_dir }}/data/aliases'
+    - '{{ mailman_home_dir }}/data/aliases.db'
+    - '{{ mailman_home_dir }}/data/virtual-mailman'
+    - '{{ mailman_home_dir }}/data/virtual-mailman.db'
+
+- name: only mailman user has access to data/adm.pw
+  file:
+    path: '{{ mailman_home_dir }}/data/adm.pw'
+    state: file
+    mode: 0640
+
+- name: permission of sitelist.cfg are correct
+  file:
+    path: '{{ mailman_home_dir }}/data/sitelist.cfg'
+    state: file
+    mode: 0444

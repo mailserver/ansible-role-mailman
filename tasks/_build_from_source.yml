@@ -1,0 +1,80 @@
+---
+
+- name: build dependencies are installed
+  apt:
+    name: '{{ item }}'
+    update_cache: yes
+    cache_valid_time: 3600
+    state: latest
+  with_items:
+    - python-dnspython
+
+- name: build directory exists
+  file:
+    path: '{{ mailman_build_dir }}'
+    state: directory
+    owner: '{{ mailman_user }}'
+    group: '{{ mailman_group }}'
+    mode: 0770
+
+- name: sources are downloaded
+  get_url:
+    url: '{{ mailman_source_url }}'
+    dest: '{{ mailman_build_dir }}/mailman-{{ mailman_version }}.tgz'
+    owner: '{{ mailman_user }}'
+    group: '{{ mailman_group }}'
+    mode: 0664
+
+- name: sources are extracted
+  unarchive:
+    src: '{{ mailman_build_dir}}/mailman-{{ mailman_version }}.tgz'
+    dest: '{{ mailman_build_dir }}'
+    owner: '{{ mailman_user }}'
+    group: '{{ mailman_user }}'
+    creates: '{{ mailman_build_dir }}/mailman-{{ mailman_version }}'
+    remote_src: yes
+  become: yes
+  become_user: '{{ mailman_user }}'
+  register: _tmp_extract_sources
+
+- set_fact: _build_enabled=_tmp_extract_sources.changed
+
+- name: configure
+  command: |
+    ./configure
+      --without-permcheck \
+      --prefix='{{ mailman_lib_dir }}' \
+      --with-var-prefix='{{ mailman_home_dir }}' \
+      --with-username='{{ mailman_user }}' \
+      --with-groupname='{{ mailman_group }}' \
+      --with-mail-gid='{{ mailman_group }}' \
+      --with-cgi-gid='{{ mailman_www_group }}' \
+      --with-python=/usr/bin/python2 \
+      --with-mailhost={{ mailman_mailhost }} \
+      --with-urlhost='{{ mailman_host }}'
+  args:
+    chdir: '{{ mailman_source_dir }}'
+  become: yes
+  become_user: '{{ mailman_user }}'
+  #when: _build_enabled
+
+- name: make
+  make:
+    chdir: '{{ mailman_source_dir }}'
+  become: yes
+  become_user: '{{ mailman_user }}'
+  #when: _build_enabled
+
+- name: make install
+  make:
+    chdir: '{{ mailman_source_dir }}'
+    target: install
+  #when: _build_enabled
+
+- name: helper scripts are available
+  template:
+    src: scripts/generate-transport-mailman.sh.j2
+    dest: '{{ mailman_lib_dir }}/scripts/generate-transport-mailman.sh'
+    owner: root
+    group: mailman
+    mode: 0755

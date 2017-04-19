@@ -1,0 +1,32 @@
+---
+
+- name: mailman group exists
+  group:
+    name: '{{ mailman_group }}'
+    state: present
+    system: yes
+
+- name: mailman user exists
+  user:
+    name: '{{ mailman_user }}'
+    group: '{{ mailman_group }}'
+    system: yes
+    createhome: no
+    home: '{{ mailman_home_dir }}'
+    shell: /usr/sbin/nologin
+
+- name: mailman www group exists
+  group:
+    name: '{{ mailman_www_group }}'
+    gid: 86
+    state: present
+    system: yes
+
+- name: mailman www user exists
+  user:
+    name: '{{ mailman_www_user }}'
+    group: '{{ mailman_www_group }}'
+    uid: 86 # 50 <= uid < 100, see /usr/share/doc/mailman/README.Debian
+    system: yes
+    createhome: no
+    shell: /usr/sbin/nologin

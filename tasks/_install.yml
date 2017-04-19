@@ -1,0 +1,24 @@
+---
+
+
+
+- include: _build_from_source.yml
+
+- name: mailman systemd service is installed
+  template:
+    src: systemd/services/mailman.service.j2
+    dest: /etc/systemd/system/mailman.service
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - reload daemon
+    - restart mailman
+
+- name: mailman systemd services is enabled
+  systemd:
+    name: mailman
+    enabled: yes
+
+- include: _install_nginx.yml
+#- include: _install_apache.yml

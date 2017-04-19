@@ -1,0 +1,39 @@
+---
+
+mailman_language: en
+mailman_archives_enabled: false
+
+mailman_version: 2.1.23
+mailman_source_url: 'https://ftp.gnu.org/gnu/mailman/mailman-{{ mailman_version }}.tgz'
+mailman_build_dir: /usr/src/mailman
+mailman_source_dir: '{{ mailman_build_dir }}/mailman-{{ mailman_version }}'
+
+mailman_user: 'mailman'
+mailman_group: 'mailman'
+
+mailman_www_user: www-mailman
+mailman_www_group: www-mailman
+
+mailman_https_ciphers: 'EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH'
+mailman_https_protocols: 'TLSv1 TLSv1.1 TLSv1.2'
+mailman_https_dhparam_file: '/etc/letsencrypt/dhparam.pem'
+
+mailman_home_dir: /var/lib/mailman
+mailman_lib_dir: /usr/lib/mailman
+
+# The run directory will be automatically created from systemd
+mailman_fastcgi_run_dir: mailman-fcgi
+
+# Listening FastCGI Socket (Unix or TCP)
+#   unix:/var/run/fcgiwrap.socket
+#   tcp:127.0.0.1:8000
+#   tcp6:[127::1]:8000
+mailman_fastcgi_socket: '{{ mailman_fastcgi_run_dir }}/fcgiwrap.sock'
+
+mailman_host: 'mailings.example.com'
+mailman_mailhost: 'mail.example.com'
+mailman_vhosts: []
+
+mailman_postmaster: 'postmaster@{{ mailman_mailhost }}'
+
+_systemd_tempfiles_directory: /usr/lib/tmpfiles.d

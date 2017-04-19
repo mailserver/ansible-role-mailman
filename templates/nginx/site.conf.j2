@@ -1,0 +1,65 @@
+server {
+
+  server_name {{ item.domain }};
+  root {{ mailman_lib_dir }}/cgi-bin;
+
+{% if (item.cert is defined) and (item.key is defined) %}
+  listen 443;
+  listen [::]:443;
+  ssl on;
+  ssl_stapling on;
+  ssl_stapling_verify on;
+  ssl_certificate {{item.cert}};
+  ssl_trusted_certificate {{item.cert}};
+  ssl_certificate_key {{item.key}};
+  ssl_ciphers '{{mailman_https_ciphers}}';
+  ssl_protocols {{mailman_https_protocols}};
+  ssl_dhparam '{{mailman_https_dhparam_file}}';
+  ssl_prefer_server_ciphers on;
+  ssl_session_cache shared:SSL:10m;  
+{% else %}
+  listen 80;
+  listen [::]:80;
+{% endif %}
+
+  location = / {
+    rewrite ^ /listinfo permanent;
+  }
+
+  location = /mailman/ {
+    rewrite ^/mailman(.*)$ $1 permanent;
+  }
+
+  location / {
+    fastcgi_split_path_info ^(/[^/]*)(.*)$;
+    fastcgi_pass unix:/run/mailman-fcgi/fcgiwrap.sock;
+    include fastcgi.conf;
+    fastcgi_param PATH_INFO         $fastcgi_path_info;
+    fastcgi_param PATH_TRANSLATED   $document_root$fastcgi_path_info;
+  }
+
+  location /icons {
+    alias /usr/lib/mailman/icons;
+  }
+
+  location /archives {
+{% if mailman_archives_enabled %}
+    alias /var/lib/mailman/archives/public;
+    autoindex on;
+{% else %}
+    deny all;
+    return 404;
+{% endif %}
+  }
+
+}
+
+{% if (item.cert is defined) and (item.key is defined) %}
+server {
+  server_name {{ item.domain }};
+  rewrite ^ https://{{ item.domain }}$request_uri? permanent;
+
+  listen 80;
+  listen [::]:80;
+}
+{% endif %}

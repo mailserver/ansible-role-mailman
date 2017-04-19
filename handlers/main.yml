@@ -1,0 +1,24 @@
+---
+
+- name: reload daemon
+  command: systemctl daemon-reload
+
+- name: restart mailman
+  service: name=mailman state=restarted
+
+- name: restart fcgiwrap
+  service: name=mailman-fcgiwrap state=restarted
+
+- name: restart nginx
+  service: name=nginx state=restarted
+
+- name: restart apache
+  service: name=apache2 state=restarted
+
+- name: genaliases
+  command: '{{ mailman_lib_dir }}/bin/genaliases'
+  args:
+    chdir: '{{ mailman_home_dir }}'
+    creates: '{{ mailman_home_dir }}/data/aliases'
+  become: yes
+  become_user: '{{ mailman_user }}'

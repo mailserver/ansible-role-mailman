@@ -1,0 +1,34 @@
+---
+
+- name: Mailman directory exists
+  file:
+    path: '{{ mailman_lib_dir }}/Mailman'
+    state: directory
+    owner: root
+    group: '{{ mailman_group }}'
+    mode: 0755
+
+- name: postfix-to-mailman.py is installed
+  template:
+    src: scripts/postfix-to-mailman.py.j2
+    dest: '{{ mailman_lib_dir }}/Mailman/postfix-to-mailman.py'
+    owner: 'root'
+    group: 'mailman'
+    mode: 0755
+
+- name: mailman is configured
+  template: 
+    src: mm_cfg.py.j2
+    #dest: /etc/mailman/mm_cfg.py
+    dest: '{{ mailman_lib_dir }}/Mailman/mm_cfg.py'
+    owner: root
+    group: '{{ mailman_group }}'
+    mode: 0640
+  notify: 
+    #- genaliases
+    - restart mailman
+
+- name: fastcgiwrap socket directory is automatically created
+  template:
+    src: systemd/tempfiles.d/fcgiwrap.conf.j2
+    dest: '{{ _systemd_tempfiles_directory }}'
